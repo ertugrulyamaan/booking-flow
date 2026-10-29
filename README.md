@@ -1,5 +1,7 @@
 # booking-flow
 
+[![CI](https://github.com/ertugrulyamaan/booking-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/ertugrulyamaan/booking-flow/actions/workflows/ci.yml)
+
 > 🚧 **Work in progress.** v1.0 is planned for late November 2026. See the [roadmap](#roadmap).
 
 An end-to-end room booking flow for a small hotel, from the PostgreSQL schema to a production deploy.
@@ -18,25 +20,45 @@ A guest requests a room for a date range. The request **holds those dates** unti
 
 ## Stack
 
-| Layer | Choice |
-|---|---|
-| Monorepo | pnpm workspaces |
-| API | NestJS (TypeScript strict) |
-| Web | Next.js (App Router) |
-| Database | PostgreSQL 16, Prisma + raw SQL migrations |
+| Layer      | Choice                                              |
+| ---------- | --------------------------------------------------- |
+| Monorepo   | pnpm workspaces                                     |
+| API        | NestJS (TypeScript strict)                          |
+| Web        | Next.js (App Router)                                |
+| Database   | PostgreSQL 16, Prisma + raw SQL migrations          |
 | Validation | zod, shared between web and API (`packages/shared`) |
-| Tests | Jest, supertest, Playwright |
-| Infra | Docker Compose, GitHub Actions |
+| Tests      | Jest, supertest, Playwright                         |
+| Infra      | Docker Compose, GitHub Actions                      |
+
+## Getting started
+
+Requirements: Node.js 24 (`.nvmrc`), pnpm via `corepack enable`, Docker.
+
+```bash
+cp .env.example .env
+pnpm install
+docker compose up -d db     # PostgreSQL 16 on localhost:5432
+
+pnpm build
+pnpm --filter @booking-flow/api start:dev   # http://localhost:3001/api/health
+pnpm --filter @booking-flow/web dev         # http://localhost:3000
+```
+
+| Command                             | What it does                                               |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `pnpm typecheck`                    | Builds `packages/shared`, then type-checks every workspace |
+| `pnpm build`                        | Builds every workspace                                     |
+| `pnpm format` / `pnpm format:check` | Prettier                                                   |
 
 ## Roadmap
 
-| Week | Focus | Status |
-|---|---|---|
-| 0 | Repo, data model draft, monorepo skeleton | 🟡 In progress |
-| 1 | Schema, exclusion constraint, availability, concurrency test | ⬜ |
-| 2 | Hold expiry, idempotency, rate limits, error model | ⬜ |
-| 3 | Admin auth, availability page, booking form, Playwright → **MVP** | ⬜ |
-| 4 | Deploy, measurements, README → **v1.0** | ⬜ |
+| Week | Focus                                                             | Status         |
+| ---- | ----------------------------------------------------------------- | -------------- |
+| 0    | Repo, data model draft, monorepo skeleton                         | 🟡 In progress |
+| 1    | Schema, exclusion constraint, availability, concurrency test      | ⬜             |
+| 2    | Hold expiry, idempotency, rate limits, error model                | ⬜             |
+| 3    | Admin auth, availability page, booking form, Playwright → **MVP** | ⬜             |
+| 4    | Deploy, measurements, README → **v1.0**                           | ⬜             |
 
 Design notes: [`docs/data-model.md`](docs/data-model.md) · Decisions: [`docs/decisions.md`](docs/decisions.md)
 

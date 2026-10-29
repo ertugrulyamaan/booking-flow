@@ -25,60 +25,60 @@ stateDiagram-v2
 
 ### `rooms`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `uuid` PK | |
-| `slug` | `text` unique | URL-friendly name |
-| `name`, `description` | `text` | |
-| `capacity` | `int` | `CHECK (capacity > 0)` |
-| `base_price` | `numeric(10,2)` | `CHECK (base_price >= 0)`, serialized as a string in the API |
-| `currency` | `text` | default `EUR` |
-| `is_active` | `boolean` | inactive rooms are not bookable |
-| `created_at`, `updated_at` | `timestamptz` | |
+| Column                     | Type            | Notes                                                        |
+| -------------------------- | --------------- | ------------------------------------------------------------ |
+| `id`                       | `uuid` PK       |                                                              |
+| `slug`                     | `text` unique   | URL-friendly name                                            |
+| `name`, `description`      | `text`          |                                                              |
+| `capacity`                 | `int`           | `CHECK (capacity > 0)`                                       |
+| `base_price`               | `numeric(10,2)` | `CHECK (base_price >= 0)`, serialized as a string in the API |
+| `currency`                 | `text`          | default `EUR`                                                |
+| `is_active`                | `boolean`       | inactive rooms are not bookable                              |
+| `created_at`, `updated_at` | `timestamptz`   |                                                              |
 
 ### `room_blocks`
 
 Dates the hotel closes manually (maintenance, private use).
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `uuid` PK | |
-| `room_id` | `uuid` FK → `rooms` | |
-| `start_date`, `end_date` | `date` | half-open `[start_date, end_date)`, `CHECK (end_date > start_date)` |
-| `reason` | `text` null | |
+| Column                   | Type                | Notes                                                               |
+| ------------------------ | ------------------- | ------------------------------------------------------------------- |
+| `id`                     | `uuid` PK           |                                                                     |
+| `room_id`                | `uuid` FK → `rooms` |                                                                     |
+| `start_date`, `end_date` | `date`              | half-open `[start_date, end_date)`, `CHECK (end_date > start_date)` |
+| `reason`                 | `text` null         |                                                                     |
 
 ### `bookings`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `uuid` PK | |
-| `room_id` | `uuid` FK → `rooms` | |
-| `check_in`, `check_out` | `date` | half-open `[check_in, check_out)`, `CHECK (check_out > check_in)` |
-| `guests` | `int` | `CHECK (guests > 0)`; `guests <= capacity` is checked in the service |
-| `guest_name`, `guest_email`, `guest_phone`, `note` | `text` | phone and note are nullable |
-| `status` | `booking_status` | `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `CANCELLED` |
-| `expires_at` | `timestamptz` | set by the database: `now() + PENDING_TTL`; `CHECK (status <> 'PENDING' OR expires_at IS NOT NULL)` |
-| `decided_at`, `decided_by_id` | `timestamptz`, `uuid` FK → `admin_users` | null until approved or rejected |
-| `created_at`, `updated_at` | `timestamptz` | |
+| Column                                             | Type                                     | Notes                                                                                               |
+| -------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `id`                                               | `uuid` PK                                |                                                                                                     |
+| `room_id`                                          | `uuid` FK → `rooms`                      |                                                                                                     |
+| `check_in`, `check_out`                            | `date`                                   | half-open `[check_in, check_out)`, `CHECK (check_out > check_in)`                                   |
+| `guests`                                           | `int`                                    | `CHECK (guests > 0)`; `guests <= capacity` is checked in the service                                |
+| `guest_name`, `guest_email`, `guest_phone`, `note` | `text`                                   | phone and note are nullable                                                                         |
+| `status`                                           | `booking_status`                         | `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `CANCELLED`                                           |
+| `expires_at`                                       | `timestamptz`                            | set by the database: `now() + PENDING_TTL`; `CHECK (status <> 'PENDING' OR expires_at IS NOT NULL)` |
+| `decided_at`, `decided_by_id`                      | `timestamptz`, `uuid` FK → `admin_users` | null until approved or rejected                                                                     |
+| `created_at`, `updated_at`                         | `timestamptz`                            |                                                                                                     |
 
 ### `admin_users`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `uuid` PK | |
-| `email` | `text` unique | |
-| `password_hash` | `text` | argon2id |
-| `name` | `text` | |
+| Column          | Type          | Notes    |
+| --------------- | ------------- | -------- |
+| `id`            | `uuid` PK     |          |
+| `email`         | `text` unique |          |
+| `password_hash` | `text`        | argon2id |
+| `name`          | `text`        |          |
 
 ### `idempotency_keys` (week 2)
 
-| Column | Type | Notes |
-|---|---|---|
-| `key` | `text` PK | value of the `Idempotency-Key` header |
-| `request_hash` | `text` | hash of method + path + body |
-| `state` | `text` | `IN_PROGRESS` or `COMPLETED` |
+| Column                             | Type           | Notes                                               |
+| ---------------------------------- | -------------- | --------------------------------------------------- |
+| `key`                              | `text` PK      | value of the `Idempotency-Key` header               |
+| `request_hash`                     | `text`         | hash of method + path + body                        |
+| `state`                            | `text`         | `IN_PROGRESS` or `COMPLETED`                        |
 | `response_status`, `response_body` | `int`, `jsonb` | stored response, replayed for the same key and body |
-| `created_at`, `expires_at` | `timestamptz` | cleaned up after a TTL |
+| `created_at`, `expires_at`         | `timestamptz`  | cleaned up after a TTL                              |
 
 ### `notification_outbox` (later)
 
