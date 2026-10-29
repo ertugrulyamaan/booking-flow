@@ -67,6 +67,7 @@ SEED_ROOMS=50 SEED_BOOKINGS=20000 SEED_START_DATE=2026-11-01 pnpm --filter @book
 | ------------------------------------------------------- | ---------------------------------------------------------- |
 | `pnpm typecheck`                                        | Builds `packages/shared`, then type-checks every workspace |
 | `pnpm build`                                            | Builds every workspace                                     |
+| `pnpm test:e2e`                                         | API e2e tests against a fresh `booking_test` database      |
 | `pnpm format` / `pnpm format:check`                     | Prettier                                                   |
 | `pnpm --filter @booking-flow/api prisma:migrate:deploy` | Applies pending migrations                                 |
 | `pnpm --filter @booking-flow/api prisma:seed`           | Resets and seeds the database                              |

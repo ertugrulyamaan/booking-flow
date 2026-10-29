@@ -8,6 +8,7 @@
   "scripts": {
     "build": "pnpm -r run build",
     "typecheck": "pnpm --filter @booking-flow/shared build && pnpm -r run typecheck",
+    "test:e2e": "pnpm --filter @booking-flow/shared build && pnpm --filter @booking-flow/api test:e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
