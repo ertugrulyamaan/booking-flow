@@ -17,3 +17,5 @@ yarn.lock
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+/my-docs
