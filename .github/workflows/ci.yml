@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   ci:
-    name: Format, typecheck, build, database checks
+    name: Format, typecheck, build, database checks, e2e
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -70,3 +70,7 @@ jobs:
 
       - name: Booking guard checks (plain SQL)
         run: psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f apps/api/prisma/checks/booking-guards.sql
+
+      # Creates, migrates and seeds a separate booking_test database on the same server
+      - name: E2E tests
+        run: pnpm test:e2e
