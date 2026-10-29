@@ -36,26 +36,48 @@ Requirements: Node.js 24 (`.nvmrc`), pnpm via `corepack enable`, Docker.
 
 ```bash
 cp .env.example .env
-pnpm install
-docker compose up -d db     # PostgreSQL 16 on localhost:5432
+pnpm install                # also generates the Prisma client
 
+# Database
+docker compose up -d db                                  # PostgreSQL 16 on localhost:5432
+pnpm --filter @booking-flow/api prisma:migrate:deploy    # schema + booking constraints
+pnpm --filter @booking-flow/api prisma:seed              # resets and fills demo data
+pnpm --filter @booking-flow/api db:check-guards          # 15 plain-SQL checks, all should print "ok"
+
+# Apps
 pnpm build
 pnpm --filter @booking-flow/api start:dev   # http://localhost:3001/api/health
 pnpm --filter @booking-flow/web dev         # http://localhost:3000
 ```
 
-| Command                             | What it does                                               |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `pnpm typecheck`                    | Builds `packages/shared`, then type-checks every workspace |
-| `pnpm build`                        | Builds every workspace                                     |
-| `pnpm format` / `pnpm format:check` | Prettier                                                   |
+The seed is deterministic: the same parameters always produce the same rows. It **deletes all rooms and bookings** before inserting.
+
+| Variable           | Default    | Meaning                       |
+| ------------------ | ---------- | ----------------------------- |
+| `SEED_ROOMS`       | `5`        | Number of rooms               |
+| `SEED_BOOKINGS`    | `100`      | Number of bookings            |
+| `SEED_RANDOM_SEED` | `42`       | Seed for the random generator |
+| `SEED_START_DATE`  | today, UTC | First possible check-in date  |
+
+```bash
+SEED_ROOMS=50 SEED_BOOKINGS=20000 SEED_START_DATE=2026-11-01 pnpm --filter @booking-flow/api prisma:seed
+```
+
+| Command                                                 | What it does                                               |
+| ------------------------------------------------------- | ---------------------------------------------------------- |
+| `pnpm typecheck`                                        | Builds `packages/shared`, then type-checks every workspace |
+| `pnpm build`                                            | Builds every workspace                                     |
+| `pnpm format` / `pnpm format:check`                     | Prettier                                                   |
+| `pnpm --filter @booking-flow/api prisma:migrate:deploy` | Applies pending migrations                                 |
+| `pnpm --filter @booking-flow/api prisma:seed`           | Resets and seeds the database                              |
+| `pnpm --filter @booking-flow/api db:check-guards`       | Runs the booking guard checks inside the `db` container    |
 
 ## Roadmap
 
 | Week | Focus                                                             | Status         |
 | ---- | ----------------------------------------------------------------- | -------------- |
-| 0    | Repo, data model draft, monorepo skeleton                         | 🟡 In progress |
-| 1    | Schema, exclusion constraint, availability, concurrency test      | ⬜             |
+| 0    | Repo, data model draft, monorepo skeleton                         | ✅ Done        |
+| 1    | Schema, exclusion constraint, availability, concurrency test      | 🟡 In progress |
 | 2    | Hold expiry, idempotency, rate limits, error model                | ⬜             |
 | 3    | Admin auth, availability page, booking form, Playwright → **MVP** | ⬜             |
 | 4    | Deploy, measurements, README → **v1.0**                           | ⬜             |
