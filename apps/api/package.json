@@ -3,16 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "nest build",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
+    "prisma:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "db:check-guards": "docker compose -f ../../docker-compose.yml exec -T db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -v ON_ERROR_STOP=1' < prisma/checks/booking-guards.sql"
   },
   "dependencies": {
     "@booking-flow/shared": "workspace:*",
     "@nestjs/common": "^11.0.12",
     "@nestjs/core": "^11.0.12",
     "@nestjs/platform-express": "^11.0.12",
+    "@prisma/client": "^6.5.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -21,6 +27,12 @@
     "@nestjs/schematics": "^11.0.1",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
+    "dotenv-cli": "^8.0.0",
+    "prisma": "^6.5.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.7.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

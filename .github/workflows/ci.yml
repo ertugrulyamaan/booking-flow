@@ -14,9 +14,29 @@ permissions:
 
 jobs:
   ci:
-    name: Format, typecheck, build
+    name: Format, typecheck, build, database checks
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: booking
+          POSTGRES_PASSWORD: booking_ci
+          POSTGRES_DB: booking
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U booking -d booking"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://booking:booking_ci@localhost:5432/booking?schema=public
+      # psql does not accept Prisma's ?schema= parameter
+      PSQL_URL: postgresql://booking:booking_ci@localhost:5432/booking
 
     steps:
       - uses: actions/checkout@v4
@@ -41,3 +61,12 @@ jobs:
         run: pnpm build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Apply migrations
+        run: pnpm --filter @booking-flow/api prisma:migrate:deploy
+
+      - name: Seed
+        run: pnpm --filter @booking-flow/api prisma:seed
+
+      - name: Booking guard checks (plain SQL)
+        run: psql "$PSQL_URL" -v ON_ERROR_STOP=1 -f apps/api/prisma/checks/booking-guards.sql

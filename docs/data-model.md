@@ -1,6 +1,6 @@
-# Data model (draft)
+# Data model
 
-> Week 0 draft. It turns into a Prisma schema and raw SQL migrations in week 1, and this page is updated to match.
+> Implemented in [`apps/api/prisma/`](../apps/api/prisma/): `schema.prisma`, the migrations, and [`checks/booking-guards.sql`](../apps/api/prisma/checks/booking-guards.sql), which exercises the constraints with plain SQL. Tables marked with a later week are not implemented yet.
 
 ## Booking lifecycle
 
